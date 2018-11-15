@@ -1,0 +1,115 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   read_map.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: jschille <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2018/11/05 15:48:16 by jschille          #+#    #+#             */
+/*   Updated: 2018/11/06 21:53:28 by jschille         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+#include <stdio.h>
+#include "t_sqrt.h"
+#include "t_point.h"
+#include "head.h"
+#include "creation.h"
+#include <stdlib.h>
+
+void	sqrtcpy(t_sqrt *s1, t_sqrt *s2)
+{
+	s1->x = s2->x;
+	s1->y = s2->y;
+	s1->len = s2->len;
+}
+
+
+t_sqrt	*max_sqrt(t_sqrt *s1, t_sqrt *s2)
+{
+	if (s1->len < s2->len)
+		return (s2);
+	else if (s1->len > s2->len)
+		return (s1);
+	else
+	{
+		if (s1->y < s2->y)
+			return (s1);
+		else if (s1->y > s2->y)
+			return (s2);
+		else
+		{
+			if (s1->x <= s2->x)
+				return (s1);
+			return (s2);
+		}
+	}
+}
+
+t_point	*check_line(int x, int y, t_point *p)
+{
+	int	i;
+	t_point	*po;
+
+	po = (t_point*)malloc(sizeof(t_point));
+	if (po == 0)
+		return (0);
+	po->x = 0;
+	po->y = 0;
+	i = x;
+	while (i >= p->x)
+	{
+		if (g_map[y][i] == 'o')
+		{
+			po->y = y;
+			po->x = i;
+		}
+		--i;
+	}
+	i = y;
+	while (i >= p->y)
+	{
+		if (g_map[i][x] == 'o')
+		{
+			po->x = x;
+			po->y = i;
+		}
+		--i;
+	}
+	return (po);
+}
+
+int	is_not_end(int x, int y)
+{
+	if (x == (g_col) || y == (g_str))
+		return (0);
+	return (1);
+}
+
+t_sqrt	*modified_sqrt(t_sqrt *tmp, int x, int y, int xt)
+{
+	tmp->x = x;
+	tmp->y = y;
+	tmp->len = xt - x;
+	return (tmp);
+}
+t_sqrt  *read_map(int xt, int yt, t_sqrt *tmp, t_point *point)
+{
+	t_point	*po;
+
+	if (xt == 32 && yt == 14)
+		printf("OK\n");
+	if (is_not_end(xt, yt) == 0 || g_col - xt < max.x || g_str - xt < max.y)
+		return (&max);
+	po = check_line(xt, yt, point);
+	if (po->x == 0 && po->y == 0)
+	{
+		tmp = modified_sqrt(tmp, point->x, point->y, xt);
+		max = *max_sqrt(&max, tmp);
+		return (read_map(xt + 1, yt + 1, tmp , point));
+	}
+	else
+	{
+		max = *max_sqrt(read_map(po->x + 1, point->y, tmp, create_point(po->x + 1, point->y)), read_map(point->x, po->y + 1, tmp, create_point(point->x, po->y + 1)));
+		return (&max);
+	}
+}
